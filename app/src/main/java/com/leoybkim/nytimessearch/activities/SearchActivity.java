@@ -1,16 +1,20 @@
-package com.leoybkim.nytimessearch;
+package com.leoybkim.nytimessearch.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.GridView;
 
+import com.leoybkim.nytimessearch.R;
+import com.leoybkim.nytimessearch.adapters.ArticleArrayAdapter;
+import com.leoybkim.nytimessearch.models.Article;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
@@ -19,15 +23,20 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+
 import cz.msebera.android.httpclient.Header;
 
 public class SearchActivity extends AppCompatActivity {
 
     private final static String LOG_TAG = SearchActivity.class.getSimpleName();
 
-    EditText etQuery;
-    GridView gvResults;
-    Button btnSearch;
+    private EditText mEditTextQuery;
+    private GridView mGridViewResults;
+    private Button mButtonSearch;
+
+    private ArrayList<Article> mArticles;
+    private ArticleArrayAdapter mAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,9 +45,26 @@ public class SearchActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        etQuery =  (EditText) findViewById(R.id.et_query);
-        gvResults = (GridView) findViewById(R.id.gv_result);
-        btnSearch = (Button) findViewById(R.id.btn_search);
+        // Setup views
+        mEditTextQuery =  (EditText) findViewById(R.id.et_query);
+        mGridViewResults = (GridView) findViewById(R.id.gv_result);
+        mButtonSearch = (Button) findViewById(R.id.btn_search);
+
+        mArticles = new ArrayList<>();
+        mAdapter = new ArticleArrayAdapter(this, mArticles);
+        mGridViewResults.setAdapter(mAdapter);
+
+        // Setup click listener
+        mGridViewResults.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                // create an intent to display the article
+                Intent intent = new Intent(getApplicationContext(), ArticleActivity.class);
+                Article article = mArticles.get(i);
+                intent.putExtra("article", article);
+                startActivity(intent);
+            }
+        });
     }
 
     @Override
@@ -64,7 +90,7 @@ public class SearchActivity extends AppCompatActivity {
     }
 
     public void onArticleSearch(View view) {
-        String query = etQuery.getText().toString();
+        String query = mEditTextQuery.getText().toString();
         AsyncHttpClient client = new AsyncHttpClient();
         String url = "http://api.nytimes.com/svc/search/v2/articlesearch.json";
 
@@ -79,7 +105,8 @@ public class SearchActivity extends AppCompatActivity {
                 JSONArray articleJsonResults = null;
                 try {
                     articleJsonResults = response.getJSONObject("response").getJSONArray("docs");
-                    Log.d(LOG_TAG, articleJsonResults.toString());
+                    mArticles.addAll(Article.fromJsonArray(articleJsonResults));
+                    mAdapter.notifyDataSetChanged();
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
