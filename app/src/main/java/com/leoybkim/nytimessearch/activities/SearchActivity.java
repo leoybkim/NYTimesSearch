@@ -25,7 +25,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 
 import cz.msebera.android.httpclient.Header;
 
@@ -133,15 +135,36 @@ public class SearchActivity extends AppCompatActivity implements FilterDialogFra
         params.put("api-key", getString(R.string.NYT_API_KEY));
         params.put("page", 0);
 
-        if (filterDate != "Any Time") {
+        Calendar calendar = Calendar.getInstance();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
 
+        if (filterDate != "Any time") {
+            switch(filterDate) {
+                case "Past day":
+                    calendar.add(Calendar.DAY_OF_YEAR, -1);
+                    break;
+                case "Past week":
+                    calendar.add(Calendar.WEEK_OF_YEAR, -1);
+                    break;
+                case "Past month":
+                    calendar.add(Calendar.MONTH, -1);
+                    break;
+                case "Past year":
+                    calendar.add(Calendar.YEAR, -1);
+                    break;
+                default:
+                    break;
+            }
         }
+
+        String beginDate = sdf.format(calendar.getTime());
+        Toast.makeText(this,beginDate,Toast.LENGTH_LONG).show();
+        params.put("begin_date", beginDate);
 
         if (filterOrder == "Oldest") {
             params.put("sort", "oldest");
         } else {
             params.put("sort", "newest");
-
         }
 
         if (filterArts) {
@@ -172,7 +195,6 @@ public class SearchActivity extends AppCompatActivity implements FilterDialogFra
     @Override
     public void onFilteredArticle(String filterDate, String filterOrder, boolean filterArts, boolean filterEducation, boolean filterSports) {
         // Call back method
-        Toast.makeText(this, filterDate + " " + filterOrder + " " + filterArts, Toast.LENGTH_LONG).show();
         onFilteredArticleSearch(filterDate, filterOrder, filterArts, filterEducation, filterSports);
     }
 }
