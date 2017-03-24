@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="date_filter_array">
+        <item>Any time</item>
+        <item>Past hour</item>
+        <item>Past 24 hours</item>
+        <item>Past week</item>
+        <item>Past month</item>
+        <item>Past year</item>
+    </string-array>
+</resources>

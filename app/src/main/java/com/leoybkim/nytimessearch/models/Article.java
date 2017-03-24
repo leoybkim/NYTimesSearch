@@ -14,13 +14,13 @@ import java.util.ArrayList;
 public class Article implements Serializable {
 
     private String mWebUrl;
-    private String mHadline;
+    private String mHeadline;
     private String mThumbNail;
 
     public Article(JSONObject jsonObject) {
         try {
             mWebUrl = jsonObject.getString("web_url");
-            mHadline = jsonObject.getJSONObject("headline").getString("main");
+            mHeadline = jsonObject.getJSONObject("headline").getString("main");
 
             JSONArray multimedia = jsonObject.getJSONArray("multimedia");
 
@@ -54,7 +54,7 @@ public class Article implements Serializable {
     }
 
     public String getHadline() {
-        return mHadline;
+        return mHeadline;
     }
 
     public String getThumbNail() {

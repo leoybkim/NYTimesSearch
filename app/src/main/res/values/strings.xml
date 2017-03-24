@@ -3,4 +3,10 @@
     <string name="action_settings">Settings</string>
     <string name="search_hint">Enter search query</string>
     <string name="btn_text_search">Search</string>
+    <string name="filter">Filter</string>
+    <string name="switch_topic_arts">Arts</string>
+    <string name="switch_topic_education">Education</string>
+    <string name="switch_topic_sports">Sports</string>
+    <string name="spinner_textview_range">Range</string>
+    <string name="spinner_textview_order">Order</string>
 </resources>

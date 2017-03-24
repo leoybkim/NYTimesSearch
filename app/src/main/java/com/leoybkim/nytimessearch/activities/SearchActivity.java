@@ -11,9 +11,11 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.GridView;
+import android.widget.Toast;
 
 import com.leoybkim.nytimessearch.R;
 import com.leoybkim.nytimessearch.adapters.ArticleArrayAdapter;
+import com.leoybkim.nytimessearch.fragments.FilterDialogFragment;
 import com.leoybkim.nytimessearch.models.Article;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.JsonHttpResponseHandler;
@@ -27,7 +29,7 @@ import java.util.ArrayList;
 
 import cz.msebera.android.httpclient.Header;
 
-public class SearchActivity extends AppCompatActivity {
+public class SearchActivity extends AppCompatActivity implements FilterDialogFragment.OnFilteredArticleListener {
 
     private final static String LOG_TAG = SearchActivity.class.getSimpleName();
 
@@ -81,9 +83,17 @@ public class SearchActivity extends AppCompatActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+        switch (id) {
+            case R.id.filter:
+                FilterDialogFragment filterFragmentDialog = new FilterDialogFragment();
+                filterFragmentDialog.newInstance("Filter Articles");
+                filterFragmentDialog.setOnFilteredArticleListener(this);
+                filterFragmentDialog.show(getSupportFragmentManager(), "fragment_filter");
+                break;
+            case R.id.action_settings:
+                break;
+            default:
+                return true;
         }
 
         return super.onOptionsItemSelected(item);
@@ -112,5 +122,57 @@ public class SearchActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    public void onFilteredArticleSearch(String filterDate, String filterOrder, boolean filterArts, boolean filterEducation, boolean filterSports) {
+        String query = mEditTextQuery.getText().toString();
+        AsyncHttpClient client = new AsyncHttpClient();
+        String url = "http://api.nytimes.com/svc/search/v2/articlesearch.json";
+
+        RequestParams params = new RequestParams();
+        params.put("api-key", getString(R.string.NYT_API_KEY));
+        params.put("page", 0);
+
+        if (filterDate != "Any Time") {
+
+        }
+
+        if (filterOrder == "Oldest") {
+            params.put("sort", "oldest");
+        } else {
+            params.put("sort", "newest");
+
+        }
+
+        if (filterArts) {
+            params.put("fq", "news_desk:(\"Arts\")");
+        }
+        if (filterEducation) {
+            params.put("fq", "news_desk:(\"Education\")");
+        }
+        if (filterSports) {
+            params.put("fq", "news_desk:(\"Sports\")");
+        }
+
+        client.get(url, params, new JsonHttpResponseHandler() {
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                JSONArray articleJsonResults = null;
+                try {
+                    articleJsonResults = response.getJSONObject("response").getJSONArray("docs");
+                    mArticles.addAll(Article.fromJsonArray(articleJsonResults));
+                    mAdapter.notifyDataSetChanged();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
+
+    @Override
+    public void onFilteredArticle(String filterDate, String filterOrder, boolean filterArts, boolean filterEducation, boolean filterSports) {
+        // Call back method
+        Toast.makeText(this, filterDate + " " + filterOrder + " " + filterArts, Toast.LENGTH_LONG).show();
+        onFilteredArticleSearch(filterDate, filterOrder, filterArts, filterEducation, filterSports);
     }
 }
